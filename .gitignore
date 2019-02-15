@@ -1,0 +1,15 @@
+
+## Python
+venv
+env
+__pycache__
+
+## Pyinstaller
+dist
+build
+*.exe
+*.spec
+
+## Program
+*.log
+*.ini
