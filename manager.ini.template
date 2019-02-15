@@ -1,0 +1,16 @@
+[PLAY]
+game=Jak1
+
+[CONFIG]
+PCSX_BASE_DIR=R:\Emulators\PCSX\PCSX-DEV
+PCSX_USER_GAMES=
+PCSX_SHARED_DIR=
+PCSX_USER_CONFIGS=
+_sharememcards=yes
+SHARED_MEMCARDS_FOLDER=
+FART_EXE=
+
+[COPY]
+ignore=inis
+       bios
+       memcards
