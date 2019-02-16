@@ -9,7 +9,7 @@ jobs:
       install: $PY -m pip install -r requirements.txt
       script:
         - mkdir UPX && cd UPX && UPX_PATH=$(PWD)
-        - curl https://github.com/upx/upx/releases/download/v3.95/upx-3.95-win64.zip --output UPX.zip
+        - curl https://github.com/upx/upx/releases/download/v3.95/upx-3.95-win64.zip -J -L --output UPX.zip
         - 7z x -y UPX.zip -o$UPX_PATH upx-3.95-win64
         - cd ..
 
