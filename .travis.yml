@@ -1,8 +1,14 @@
 os: windows
-language: python
-python: 3.7
+language: cpp # Python not supported yet
+matrix:
+  include:
+    - python : 3.7
+    env: PY=py
+    before_install: choco install python
 install:
-  - pip install -r requiremens.txt
+  - $PY --version
+  - $PY -m pip --version
+  - $PY -m pip install -r requirements.txt
 script:
   - build.bat
 deploy:
