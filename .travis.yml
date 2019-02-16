@@ -10,7 +10,7 @@ jobs:
       script:
         - mkdir UPX && cd UPX && UPX_PATH=$(PWD)
         - curl https://github.com/upx/upx/releases/download/v3.95/upx-3.95-win64.zip --output UPX.zip
-        - 7za e -y UPX.zip -o/. upx-3.95-win64
+        - 7z x -y UPX.zip -o $UPX_PATH upx-3.95-win64
         - cd ..
 
     - stage: build and deploy
