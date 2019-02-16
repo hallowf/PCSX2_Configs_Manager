@@ -3,8 +3,8 @@ language: cpp # Python not supported yet
 matrix:
   include:
     - python : 3.7
-    env: PY=py
-    before_install: choco install python
+      env: PY=py
+      before_install: choco install python
 install:
   - $PY --version
   - $PY -m pip --version
