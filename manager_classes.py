@@ -105,7 +105,6 @@ class GameManager(object):
                     self.logger.debug("\nWriting : %s\n" % (file))
                     f.write(content)
 
-
     # Copy templates to game folder
     def copy_templates(self, src, dest):
         dest = dest.replace(".template", "") if dest.endswith(".template") else dest
@@ -120,7 +119,6 @@ class GameManager(object):
                 os.remove(dest)
             self.logger.debug("Copying " + src)
             shutil.copyfile(src, dest)
-
 
     # For handling game management calls manage_game with action
     def handle_management(self, is_repeating=False):
@@ -166,12 +164,10 @@ class GameManager(object):
             sys.exit(1)
         sys.exit(0)
 
-
     # Manage game
     def manage_game(self, action):
 
         # Manage functions
-
         # Calls self.recurse_copy
         def copy_f():
             over_w = input("\nDo you want to overwrite files if they exist(y|n):")

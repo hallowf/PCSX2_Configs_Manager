@@ -1,12 +1,7 @@
 import os, sys, configparser, argparse ,subprocess, traceback, shutil, logging, time
 
 from manager_utils import get_manage_option, envs_to_dict, add_args
-
 from manager_classes import GameManager
-
-
-
-
 
 ## main function
 def run_main(args, config, logger):
