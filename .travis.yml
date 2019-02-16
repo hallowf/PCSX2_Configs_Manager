@@ -1,15 +1,15 @@
 os: windows
 language: cpp # Python not supported yet
-jobs:
+matrix:
   include:
+    - python : 3.7
+      env: PY=py
+      before_install: choco install python
     - stage: install python
       - python : 3.7
         env: PY=py
         before_install: choco install python
-        install:
-          - $PY --version
-          - $PY -m pip --version
-          - $PY -m pip install -r requirements.txt
+
     - stage: install upx
       script:
         - mkdir UPX && cd UPX && UPX_PATH=$(PWD)
@@ -25,6 +25,10 @@ jobs:
             --name="Manager" ^
             --uac-admin ^
             main.py
+install:
+  - $PY --version
+  - $PY -m pip --version
+  - $PY -m pip install -r requirements.txt
 deploy:
   provider: releases
   api_key:
