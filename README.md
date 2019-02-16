@@ -29,5 +29,38 @@ ignore=bios <= folders to ignore
 6. Play `Manager.exe -cfg manager.ini -option p`
 3. run `Manager.exe --help` to see arguments
 
+#### Dev
+Windows:
+
+```
+cd AnyFolder
+
+git clone https://github.com/hallowf/PCSX2_Configs_Manager Manager
+
+py -3.7 -m pip install virtualenv
+
+py -3.7 -m virtualenv venv
+
+venv\Scripts\activate
+
+pip install -r requirements.txt
+
+python main.py --help
+
+
+# Building
+
+pyinstaller main.py
+
+# Configure main.spec
+
+pyinstaller --onefile main.spec
+
+```
+
+Or just download it as a zip, create the folder Configs and copy the contents of the zip inside
+
+
+
 ### Notes
 **REQUIRES PYTHON 3.4^**
