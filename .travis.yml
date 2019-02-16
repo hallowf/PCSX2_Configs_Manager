@@ -2,14 +2,11 @@ os: windows
 language: cpp # Python not supported yet
 jobs:
   include:
-    - stage: install python
-      - python: 3.7
-        env: PY=py
-        before_install: choco install python
-        install:
-          - $PY --version
-          - $PY -m pip --version
-          - $PY -m pip install -r requirements.txt
+    - stage: install python and requirements
+      python: 3.7
+      env: PY=py
+      before_install: choco install python
+      install: $PY -m pip install -r requirements.txt
 
     - stage: install upx
       script:
@@ -17,6 +14,7 @@ jobs:
         - curl https://github.com/upx/upx/releases/download/v3.95/upx-3.95-win64.zip --output UPX.zip
         - 7za e -y UPX.zip -o/. upx-3.95-win64
         - cd ..
+        
     - stage: build
       script:
         - pyinstaller --noconfirm --log-level=WARN ^
