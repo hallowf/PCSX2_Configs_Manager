@@ -9,8 +9,23 @@ install:
   - $PY --version
   - $PY -m pip --version
   - $PY -m pip install -r requirements.txt
-script:
-  - build.bat
+jobs:
+  include:
+    - stage: install upx
+      script:
+        - mkdir UPX && cd UPX && UPX_PATH=$(PWD)
+        - curl https://github.com/upx/upx/releases/download/v3.95/upx-3.95-win64.zip --output UPX.zip
+        - 7za e -y UPX.zip -o/. upx-3.95-win64
+        - cd ..
+    - stage: build
+      script:
+        - pyinstaller --noconfirm --log-level=WARN ^
+            --onefile ^
+            --upx-dir=%UPX_PATH% ^
+            --icon="manager.ico" ^
+            --name="Manager" ^
+            --uac-admin ^
+            main.py
 deploy:
   provider: releases
   api_key:
