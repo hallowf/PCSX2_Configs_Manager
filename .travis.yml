@@ -1,0 +1,9 @@
+deploy:
+  provider: releases
+  api_key:
+    secure: uA6chszOeLPozTyJULYNHN+RnovImW0T5NI9nrJMmyjdZJWpK5bWZ+rAtXG/j7O+JMN/Ot6ZUJW/oeM5rgXwlg9kdjMBWX+1ooQSG61gyM36J4DauWrrAhCmI1QuNlN4dZXsApIuNHZIyjoxG0GPH3EoQ5oT46hgb04GkFsTGdRF5Mc6lfZeasJuTYDwq7jRQM5On22OX7GgZ/Imj6YKvtZwYz4tqXLG9o/lIyTxGnIeR0gGhaM7xRBo6H7Rv3DF7qk2ED5m4mmr9uXPEOKqJPFaXQejpdnyYSEd4mmVEr6twfxX+1Qd4P/z0Qq/ltxfUNBVjxuT7NCNytveqFBaHdk7NR6gX3gLqdQZtz6cFS6QCWI+2pvEdFGQUUmku88oiiIThIkRkpRxKEWsj7t5hLBCP4z/+MVRpfGUyy7XvJeXQ63slEKWcWMQUMHf+82KEayWOselmLn0SsKSefItnf7O83B8Vx+aZY61u4+Nogn0Ps0O2zEpUPER57stPVdLzxQ27Uy/36J0z0ualcYrBaEdGHzFHa7uc1paldiikkdldUdGK0PunJwyVLbuKLMjQl6ey/KlFVBcIgMr9sVtln1GtuB37fkqT6R6dCnUkrIsGImobDIz6LAYtyKA4CWmVg+20WiZ6PAHOEyreNzKh/1o2DUuNaNCGlMUULsZAkE=
+  file_glob: true
+  file: dist/*
+  on:
+    repo: hallowf/PCSX2_Configs_Manager
+    tags: true
