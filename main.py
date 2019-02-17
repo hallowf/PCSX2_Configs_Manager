@@ -26,7 +26,7 @@ def run_main(args, config, logger):
         g_manager.handle_management()
 
 ## Configure and run
-def startmain():
+def start_main():
     sys.stdout.write("\n")
     arg_parser = argparse.ArgumentParser(description='Manage PCSX2 configs')
     args = add_args(arg_parser)
@@ -47,4 +47,4 @@ def startmain():
     run_main(args, config, logger)
 
 if __name__ == '__main__':
-    startmain()
+    start_main()

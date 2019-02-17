@@ -24,4 +24,5 @@ jobs:
         file: dist/*
         draft: true
         on:
+          tags: true
           repo: hallowf/PCSX2_Configs_Manager
