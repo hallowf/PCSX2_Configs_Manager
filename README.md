@@ -22,7 +22,7 @@ ignore=bios <= folders to ignore
 
 ## Usage
 
-First donwload the [exe]() place it near your pcsx desired configs location
+First donwload the [exe](https://github.com/hallowf/PCSX2_Configs_Manager/releases) place it near your pcsx desired configs location
 and make a file named manager.ini you can name it whatever you want copy the contents from [Configuration](#configuration)
 replacing everything with your own values:
 
