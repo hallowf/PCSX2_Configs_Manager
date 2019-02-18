@@ -16,25 +16,39 @@ class GameManager(object):
         self.config = config
         self.logger = logger
         self.u_args = args
+        self.share_memcards = False
         self.game_preset = None
         self.curr_src_dir = None
         self.u_configs = None
+        self.shared_dir = None
+        self.shared_memcards_folder = None
+        self.base_dir = None
+        self.base_dir2 = None
+        self.bios_name = None
 
     # Set environment variables
     def set_envs(self,env_dict):
         self.logger.info("Setting environment variables\n")
         env_dict["PCSX_SHARED_DIR"] = env_dict["PCSX_SHARED_DIR"].replace("\\", "\\\\")
-        os.environ["PCSX_MAIN_EXE"] = env_dict["PCSX_BASE_DIR"] + "\\pcsx2.exe"
+        self.shared_dir = env_dict["PCSX_SHARED_DIR"]
         self.u_configs = env_dict["PCSX_USER_CONFIGS"]
-        for var in env_dict:
-            if " " in env_dict[var]:
-                env_dict[var] = "\"%s\"" % (env_dict[var])
-            if var == "SHARED_MEMCARDS_FOLDER" and env_dict["_SHAREMEMCARDS"] == "no":
+        self.share_memcards = env_dict["_SHAREMEMCARDS"]
+        self.shared_memcards_folder = env_dict["SHARED_MEMCARDS_FOLDER"]
+        for v in env_dict:
+            if " " in env_dict[v]:
+                env_dict[v] = "\"%s\"" % (env_dict[v])
+            if v == "SHARED_MEMCARDS_FOLDER" and env_dict["_SHAREMEMCARDS"] == "no":
                 self.logger.info("Memory cards not shared skipping variable")
                 pass
             else:
-                self.logger.debug("Setting %s to %s" % (var,env_dict[var]))
-                os.environ[var] = env_dict[var]
+                if v == "PCSX_BASE_DIR":
+                    self.base_dir = env_dict[v]
+                    self.base_dir2 = env_dict[v].replace("\\","\\\\")
+                    os.environ["PCSX_MAIN_EXE"] = v + "\\pcsx2.exe"
+                elif v == "PCSX_CURRENT_BIOS_NAME":
+                    self.bios_name = env_dict[v]
+                self.logger.debug("Setting %s to %s" % (v,env_dict[v]))
+                os.environ[v] = env_dict[v]
         self.set_game_preset()
 
     # Sets self.game_preset to game preset folder
@@ -51,7 +65,7 @@ class GameManager(object):
         # Verify inside game preset
         game_preset = os.path.normpath(self.game_preset)
         required_dirs = ["inis", "shaders"]
-        required_files = ["GameIndex.dbf", "pcsx2.exe", "pcsx2.reg"]
+        required_files = ["GameIndex.dbf", "pcsx2.exe"]
         game_f = [f for f in os.listdir(game_preset) if os.path.isfile("%s\\%s" % (game_preset,f))]
         game_d = [r_d for r_d in os.listdir(game_preset) if os.path.isdir("%s\\%s" % (game_preset,r_d))]
         for f in required_files:
@@ -119,6 +133,27 @@ class GameManager(object):
                 os.remove(dest)
             self.logger.debug("Copying " + src)
             shutil.copyfile(src, dest)
+
+    def edit_templates(self):
+        tmplts = ["pcsx2.reg", "inis\\PCSX2_ui.ini"]
+        tmplts_loc = self.game_preset
+        for t in tmplts:
+            t_loc = "%s\\%s" % (tmplts_loc, t)
+            if t == "pcsx2.reg":
+                content = self.read_write_file(t_loc,"r")
+                content = content.replace("*BASE_DIR1*", self.base_dir2)
+                self.read_write_file(t_loc, "w", content)
+            else:
+                content = self.read_write_file(t_loc, "r")
+                content = content.replace("*BASE_DIR1*", self.base_dir2)
+                content = content.replace("*BIOS*", self.bios_name)
+                content = content.replace("SHARED_DIR", self.shared_dir)
+                if self._SHAREMEMCARDS:
+                    content = content.replace("*MEMCARDS*", self.shared_memcards_folder)
+                else:
+                    content = content.replace("*MEMCARDS*", "memcards")
+                self.read_write_file(t_loc, "w", content)
+
 
     # For handling game management calls manage_game with action
     def handle_management(self, is_repeating=False):
@@ -197,9 +232,11 @@ class GameManager(object):
                     os.mkdir(game_preset)
                 self.logger.info("Copying templates from %s to %s\n" % (temp_loc,game_preset))
                 self.copy_templates(temp_loc, game_preset)
+                self.logger.info("Replacing values in templates with the ones provided\n")
+                self.edit_templates()
                 return True
             else:
-                self.logger.error("Templates not found")
+                self.logger.error("Templates not found\n")
             return False
 
         # For adding the game.cmd file
@@ -216,26 +253,12 @@ class GameManager(object):
                 self.logger.error("Can't find %s" % (temp_loc))
             return False
 
-        # Run fart.bat
-        def run_f():
-            self.logger.info("Running fart\n")
-            os.chdir(self.game_preset)
-            try:
-                subprocess.call("fart.bat")
-                os.chdir(self.start_dir)
-                return True
-            except Exception:
-                self.logger.error("Invalid path: %s\\fart.bat" % (self.game_preset))
-            os.chdir(self.start_dir)
-            return False
-
         def exit_n():
             sys.exit(0)
 
         funcs = {
             "cf" : copy_f,
             "at" : add_t,
-            "rf" : run_f,
             "cc" : create_c,
             "pg" : self.run_game_cmd,
             "e" : exit_n,
