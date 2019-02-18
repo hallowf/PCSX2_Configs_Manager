@@ -18,7 +18,6 @@ def run_main(args, config, logger):
         time.sleep(2)
         g_manager.manage_game("cf")
         g_manager.manage_game("at")
-        g_manager.manage_game("rf")
         g_manager.manage_game("cc")
     elif args.option == "m":
         logger.info("Starting management\n")
