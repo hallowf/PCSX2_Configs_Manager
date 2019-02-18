@@ -12,7 +12,6 @@ PCSX_USER_CONFIGS=R:\Emulators\PCSX\Configs <= Location of game presets
 _sharememcards=yes <= if you want to share memcards
 SHARED_MEMCARDS_FOLDER=C:\users\user\Documents\pcsx2\memcards <= location of memcards folder
 PCSX_CURRENT_BIOS_NAME=something.bin <= bios name *for replacing value in ui.ini
-FART_EXE=R:\AnyFolder\Shared\fart.exe <= fart.exe full path
 
 [MANAGER]
 continue=y <= For managing game if y it will autocontinue if no will always stop after first cmd ran
@@ -80,8 +79,13 @@ in case there is a need to create equal configurations for multiple games
 
 3. Fix the issue with lack of permission to create a hard symlink
 * using --uac-admin with pyinstaller didn't seem to work (*Might be due to travis preview support on windows environments*)
+* Maybe just stop symlinking and set \[FOLDERS\]\[MemoryCards\] = path to shared memcards
 
-4. Backup memorycards
+4. Fix the annoying windows uac prompt everytime pcsx2.reg runs
+* --uac-admin did not work
+* there is a [winreg]() module for python that allows windows registry access
+
+5. Backup memorycards
 * This might require a lot of code if using connections to cloud providers
 * I might just make an archive out of them
 * [dropbox](https://github.com/dropbox/dropbox-sdk-python) is nice and easy
