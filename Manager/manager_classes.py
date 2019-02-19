@@ -35,7 +35,7 @@ class GameManager(object):
         self.shared_dir = env_dict["PCSX_SHARED_DIR"]
         self.u_configs = env_dict["PCSX_USER_CONFIGS"]
         self.share_memcards = env_dict["_SHAREMEMCARDS"]
-        self.shared_memcards_folder = env_dict["SHARED_MEMCARDS_FOLDER"]
+        self.shared_memcards_folder = env_dict["SHARED_MEMCARDS_FOLDER"].replace("\\","\\\\")
         self.user_games = env_dict["PCSX_USER_GAMES"]
         for v in env_dict:
             if " " in env_dict[v]:
