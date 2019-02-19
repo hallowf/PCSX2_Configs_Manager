@@ -13,3 +13,4 @@ build
 ## Program
 *.log
 *.ini
+build.bat

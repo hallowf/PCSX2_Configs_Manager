@@ -4,6 +4,7 @@ import os
 UPX_PATH = os.environ["UPX_PATH"]
 CWD = os.path.dirname(os.path.abspath(__file__))
 
+
 PyInstaller.__main__.run([
         '--noconfirm',
         '--upx-dir=%s' % (UPX_PATH),
@@ -11,6 +12,7 @@ PyInstaller.__main__.run([
         '--onefile',
         '--name=Manager',
         '--icon=manager.ico',
-        '--uac-admin',
-        "main.py",
+        '--add-data=%s\\data\\pcsx2reg.txt;data' % (CWD),
+        '--add-data=%s\\data\\pcsx2ui.txt;data' % (CWD),
+        "Manager\\main.py",
     ])
