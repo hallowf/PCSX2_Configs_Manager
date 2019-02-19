@@ -11,7 +11,7 @@ def get_manage_option(again=False):
     sys.stdout.write("pg : Play game\n")
     sys.stdout.write("e : exit\n")
     sys.stdout.write("\n")
-    action = input("Please select an option(cf|at|rf|cc|pg|e):")
+    action = input("Please select an option(cf|at|cc|pg|e):")
     return action
 
 ## Return environment variables dict

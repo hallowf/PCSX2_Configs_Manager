@@ -9,7 +9,6 @@ PCSX_USER_CONFIGS=
 _sharememcards=yes
 SHARED_MEMCARDS_FOLDER=
 PCSX_CURRENT_BIOS_NAME=something.bin
-FART_EXE=R:\AnyFolder\Shared\fart.exe
 
 [MANAGER]
 continue=y

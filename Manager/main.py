@@ -12,7 +12,11 @@ def run_main(args, config, logger):
     if args.option == "p":
         logger.info("Running game %s\n" % (c_game))
         time.sleep(1)
-        g_manager.run_game_cmd()
+        has_ran = g_manager.run_game_cmd()
+        if has_ran:
+            sys.exit(0)
+        else:
+            sys.exit(1)
     elif args.option == "ac":
         logger.info("Auto configuring %s\n" % (c_game))
         time.sleep(2)
