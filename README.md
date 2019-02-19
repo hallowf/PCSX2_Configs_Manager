@@ -5,13 +5,13 @@
 game=Jak1 <= game name must match the iso's name EX: Jak.iso  = Jak
 
 [CONFIG]
-PCSX_BASE_DIR=R:\Emulators\PCSX\PCSX-DEV <= location of your pcsx installation
-PCSX_USER_GAMES=R:\Emulators\PCSX\Games <= location of folder with isos
-PCSX_SHARED_DIR=R:\Emulators\PCSX\Shared <= location of shared dir
-PCSX_USER_CONFIGS=R:\Emulators\PCSX\Configs <= Location of game presets
-_sharememcards=yes <= if you want to share memcards
+BASE_DIR=R:\Emulators\PCSX\PCSX-DEV <= location of your pcsx installation
+USER_GAMES=R:\Emulators\PCSX\Games <= location of folder with isos
+SHARED_DIR=R:\Emulators\PCSX\Shared <= location of shared dir
+USER_CONFIGS=R:\Emulators\PCSX\Configs <= Location of game presets
+SHARE_MEMCARDS=yes <= if you want to share memcards
 SHARED_MEMCARDS_FOLDER=C:\users\user\Documents\pcsx2\memcards <= location of memcards folder
-PCSX_CURRENT_BIOS_NAME=something.bin <= bios name *for replacing value in ui.ini
+CURRENT_BIOS_NAME=something.bin <= bios name *for replacing value in ui.ini
 
 [MANAGER]
 continue=y <= For managing game if y it will autocontinue if no will always stop after first cmd ran
@@ -27,7 +27,7 @@ replacing everything with your own values:
 
 
 To configure a game
-1. Run pcsx from it's installed location
+1. Run pcsx2 from it's installed location
 2. Configure plugins and settings accordingly
 3. Replace game name in manager.ini or specify it as an argument
 4. Run `Manager.exe -cfg manager.ini -option ac`
@@ -58,11 +58,7 @@ python main.py --help
 
 # Building
 
-pyinstaller main.py
-
-# Configure main.spec
-
-pyinstaller --onefile main.spec
+python pyinstaller.py
 
 ```
 
@@ -77,13 +73,9 @@ in case there is a need to create equal configurations for multiple games
 
 2. Add setting to automatic overwrite files when copying in manager.ini and maybe as an optional argument too
 
-3. Fix the issue with lack of permission to create a hard symlink
+3. Fix the issue with lack of permission to create a hard symlink (*I think this already works must double-check*)
 * using --uac-admin with pyinstaller didn't seem to work (*Might be due to travis preview support on windows environments*)
 * Maybe just stop symlinking and set \[FOLDERS\]\[MemoryCards\] = path to shared memcards
-
-4. Fix the annoying windows uac prompt everytime pcsx2.reg runs
-* --uac-admin did not work
-* there is a [winreg]() module for python that allows windows registry access
 
 5. Backup memorycards
 * This might require a lot of code if using connections to cloud providers
