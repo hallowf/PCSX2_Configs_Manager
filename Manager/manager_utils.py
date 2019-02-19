@@ -7,11 +7,11 @@ def get_manage_option(again=False):
     sys.stdout.write("\n")
     sys.stdout.write("cf : Copy files from pcsx folder to game dir\n")
     sys.stdout.write("at : Add templates to game dir, rename them, and replace values\n")
-    sys.stdout.write("cc : Create game.cmd file\n")
     sys.stdout.write("pg : Play game\n")
     sys.stdout.write("e : exit\n")
     sys.stdout.write("\n")
-    action = input("Please select an option(cf|at|cc|pg|e):")
+    action = input("Please select an option(cf|at|pg|e):")
+    sys.stdout.write("\n")
     return action
 
 ## Return environment variables dict

@@ -79,11 +79,6 @@ class GameManager(object):
             if r_d not in required_dirs:
                 self.logger.error("Missing directory %s,%s" %(game_preset,r_d))
                 has_failed = True
-        # Verify cmd script
-        r_cmd = "%s\\Scripts\\games\\%s.cmd" % (self.u_configs,self.game_name)
-        if not os.path.isfile(r_cmd):
-            self.logger.error("Missing cmd file %s" % (r_cmd))
-            has_failed = True
         return True if not has_failed else False
 
     # For copying files from PCSX_BASE_DIR to Game preset folder
@@ -172,6 +167,7 @@ class GameManager(object):
                     winreg.SetValueEx(key, n, 0, winreg.REG_SZ, value)
             except Exception as e:
                 self.logger.error(str(e))
+        self.logger.info("Done\n")
 
 
     # For handling game management calls manage_game with action
@@ -191,7 +187,7 @@ class GameManager(object):
                 else:
                     self.logger.info("Wrong value %s\n" % (cont))
                     retr = input("Retry(y|n):")
-                    if retr:
+                    if retr == "y":
                         ask_user(was_success, cont)
                     else:
                         sys.exit(0)
@@ -206,20 +202,16 @@ class GameManager(object):
         has_passed = self.check_has_required()
         if has_passed:
             self.manage_reg()
-            g_script = "%s\\Scripts\\games\\%s.cmd" % (self.u_configs, self.game_name)
-            emu_script = self.u_configs + "\\Scripts\\pcsx2.bat"
-            to_cmd = "%s && %s" % (g_script, emu_script)
-            p_exe = self.game_preset + "\\pcsx2.exe"
-            e_reg = "regedit.exe /s %s\\pcsx2.reg" % (self.game_preset)
+            r_game = "%s\\pcsx2.exe %s\\%s.iso" % (self.game_preset, self.user_games, self.game_name)
             try:
-                self.logger.info("Running cmd \"%s\"\n" % (to_cmd))
-                subprocess.call(to_cmd)
+                self.logger.info("Running cmd \"%s\"\n" % (r_game))
+                subprocess.call(r_game)
+                sys.exit(0)
             except Exception as e:
-                raise e
-                self.logger.critical("Cmd has failed %s" % (to_cmd))
+                self.logger.critical("Cmd has failed %s" % (r_game))
+                self.logger.debug(str(e))
         else:
             return False
-        return True
 
     # Manage game
     def manage_game(self, action):
@@ -243,27 +235,12 @@ class GameManager(object):
                 self.logger.error("PCSX_BASE_DIR not set")
             return False
 
-        # For adding the game.cmd file
-        def create_c():
-            self.logger.info("Creating %s.cmd\n" % (self.game_name))
-            temp_loc = self.u_configs + "\\Scripts\\games\\game.cmd.template"
-            if os.path.isfile(temp_loc):
-                temp_dest = temp_loc.replace("game.cmd.template", "%s.cmd" %(self.game_name))
-                content = self.read_write_file(temp_loc, "r")
-                content = content.replace("*game*", self.game_name)
-                content = self.read_write_file(temp_dest, "w", content)
-                return True
-            else:
-                self.logger.error("Can't find %s" % (temp_loc))
-            return False
-
         def exit_n():
             sys.exit(0)
 
         funcs = {
             "cf" : copy_f,
             "at" : self.copy_templates,
-            "cc" : create_c,
             "pg" : self.run_game_cmd,
             "e" : exit_n,
         }
