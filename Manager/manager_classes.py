@@ -1,4 +1,4 @@
-import os, shutil, sys, subprocess, winreg
+import os, shutil, sys, subprocess, winreg, ctypes
 
 from manager_utils import get_manage_option
 
@@ -17,54 +17,48 @@ class GameManager(object):
         self.config = config
         self.logger = logger
         self.u_args = args
-        self.share_memcards = False
+        self.c_data = {}
         self.game_preset = None
         self.curr_src_dir = None
-        self.u_configs = None
-        self.shared_dir = None
-        self.shared_memcards_folder = None
-        self.base_dir = None
         self.base_dir2 = None
-        self.bios_name = None
-        self.user_games = None
+        self.main_exe = None
+        self.kdll = ctypes.windll.LoadLibrary("kernel32.dll")
+
+    def __setitem__(self,k,v):
+        self.c_data[k] = v
+
+    def __getitem__(self,k):
+        return self.c_data[k]
 
     # Set environment variables
-    def set_envs(self,env_dict):
-        self.logger.info("Setting environment variables\n")
-        env_dict["PCSX_SHARED_DIR"] = env_dict["PCSX_SHARED_DIR"].replace("\\", "\\\\")
-        self.shared_dir = env_dict["PCSX_SHARED_DIR"]
-        self.u_configs = env_dict["PCSX_USER_CONFIGS"]
-        self.share_memcards = env_dict["_SHAREMEMCARDS"]
-        self.shared_memcards_folder = env_dict["SHARED_MEMCARDS_FOLDER"].replace("\\","\\\\")
-        self.user_games = env_dict["PCSX_USER_GAMES"]
+    def set_self_values(self,env_dict):
+        self.logger.info("Setting variables\n")
+        env_dict["shared_dir"] = env_dict["shared_dir"].replace("\\", "\\\\")
+        env_dict["shared_memcards_folder"] = env_dict["shared_memcards_folder"].replace("\\","\\\\")
         for v in env_dict:
             if " " in env_dict[v]:
                 env_dict[v] = "\"%s\"" % (env_dict[v])
-            if v == "SHARED_MEMCARDS_FOLDER" and env_dict["_SHAREMEMCARDS"] == "no":
+            if v == "shared_memcards_folder" and env_dict["share_memcards"] == "n":
                 self.logger.info("Memory cards not shared skipping variable\n")
                 pass
             else:
-                if v == "PCSX_BASE_DIR":
-                    self.base_dir = env_dict[v]
+                if v == "base_dir":
                     self.base_dir2 = env_dict[v].replace("\\","\\\\")
-                    os.environ["PCSX_MAIN_EXE"] = v + "\\pcsx2.exe"
-                elif v == "PCSX_CURRENT_BIOS_NAME":
-                    self.bios_name = env_dict[v]
+                    self.main_exe = v + "\\pcsx2.exe"
                 self.logger.debug("Setting %s to %s" % (v,env_dict[v]))
-                os.environ[v] = env_dict[v]
+                self.__setitem__(v,env_dict[v])
         self.set_game_preset()
 
     # Sets self.game_preset to game preset folder
     def set_game_preset(self):
         game_preset = self.game_preset
         if not game_preset:
-            game_preset = self.u_configs + "\\Games\\" + self.game_name
+            game_preset = self.c_data['user_configs'] + "\\Games\\" + self.game_name
             self.game_preset = game_preset
 
     # Check if game has everything required to run
     def check_has_required(self):
         has_failed = False
-
         # Verify inside game preset
         game_preset = os.path.normpath(self.game_preset)
         required_dirs = ["inis", "shaders"]
@@ -119,6 +113,7 @@ class GameManager(object):
 
     # Copy templates to game folder
     def copy_templates(self):
+        self.logger.info("Copying templates over to game folder\n")
         try:
             # pcsx2.reg script
             f_loc = "%s\\pcsx2.reg" % (self.game_preset)
@@ -135,19 +130,20 @@ class GameManager(object):
             content = self.read_write_file(t_loc, "r")
             self.logger.debug("Replacing *BASE_DIR1* with %s" % (self.base_dir2))
             content = content.replace("*BASE_DIR1*", self.base_dir2)
-            self.logger.debug("Replacing *BIOS* with %s" % (self.bios_name))
-            content = content.replace("*BIOS*", self.bios_name)
-            self.logger.debug("Replacing SHARED_DIR with %s" % (self.shared_dir))
-            content = content.replace("SHARED_DIR", self.shared_dir)
-            if self.share_memcards:
-                self.logger.debug("Replacing *MEMCARDS* with %s" % (self.shared_memcards_folder))
-                content = content.replace("*MEMCARDS*", self.shared_memcards_folder)
+            self.logger.debug("Replacing *BIOS* with %s" % (self.c_data['current_bios_name']))
+            content = content.replace("*BIOS*", self.c_data['current_bios_name'])
+            self.logger.debug("Replacing SHARED_DIR with %s" % (self.c_data['shared_dir']))
+            content = content.replace("SHARED_DIR", self.c_data['shared_dir'])
+            if self.config["MANAGER"]["replace_mem"] == "y":
+                self.logger.debug("Replacing *MEMCARDS* with %s" % (self.c_data["shared_memcards_folder"]))
+                content = content.replace("*MEMCARDS*", self.c_data["shared_memcards_folder"])
             else:
                 content = content.replace("*MEMCARDS*", "memcards")
             self.read_write_file(f_loc, "w", content)
             return True
         except Exception as e:
-            self.logger.error("Copying templates has failed:\n" + str(e))
+            self.logger.error("Copying templates has failed\n")
+            self.logger.debug(str(e))
             return False
 
     def manage_reg(self):
@@ -166,8 +162,24 @@ class GameManager(object):
                     self.logger.debug("Setting %s to %s" % (n, value))
                     winreg.SetValueEx(key, n, 0, winreg.REG_SZ, value)
             except Exception as e:
-                self.logger.error(str(e))
-        self.logger.info("Done\n")
+                self.logger.error("Failed to set registry values")
+                self.logger.debug(str(e))
+
+    def symlink_memcards(self, delete="n"):
+        self.logger.info("Creating symlink for memcards\n")
+        g_cards = self.game_preset + "\\memcards"
+        s_cards = self.c_data["shared_memcards_folder"]
+        cmd = "cmd /C mklink /J \"%s\" \"%s\"" % (g_cards, s_cards)
+        if os.path.isdir(g_cards):
+            delete = "y" if self.config["MANAGER"]["symlink_overwrite"] == "y" else input("Do you want to delete memcards folder if it exists(y|n):")
+            if delete == "y":
+                self.logger.info("WARNING: Deleting the memcards folder at: %s\n" % (g_cards))
+                shutil.rmtree(g_cards)
+        try:
+            subprocess.call(cmd)
+        except Exception as e:
+            self.logger.error("Failed to create symlink")
+            self.logger.debug(str(e))
 
 
     # For handling game management calls manage_game with action
@@ -200,15 +212,18 @@ class GameManager(object):
     ## Run the game must be called after set_envs
     def run_game_cmd(self):
         has_passed = self.check_has_required()
+        use_gui = ""
+        if self.config["MANAGER"]["interface"] == "n":
+            use_gui = "--nogui"
         if has_passed:
             self.manage_reg()
-            r_game = "%s\\pcsx2.exe %s\\%s.iso" % (self.game_preset, self.user_games, self.game_name)
+            r_game = "%s\\pcsx2.exe %s\\%s.iso %s" % (self.game_preset, self.c_data['user_games'], self.game_name, use_gui)
             try:
                 self.logger.info("Running cmd \"%s\"\n" % (r_game))
                 subprocess.call(r_game)
                 sys.exit(0)
             except Exception as e:
-                self.logger.critical("Cmd has failed %s" % (r_game))
+                self.logger.error("Cmd has failed %s" % (r_game))
                 self.logger.debug(str(e))
         else:
             return False
@@ -219,17 +234,24 @@ class GameManager(object):
         # Manage functions
         # Calls self.recurse_copy
         def copy_f():
-            over_w = input("\nDo you want to overwrite files if they exist(y|n):")
+            u_conf = self.config["MANAGER"]["overwrite"]
+            over_w = u_conf if u_conf == "y" else input("\nDo you want to overwrite files if they exist(y|n):")
             w_over = True if over_w == "y" else False
             self.logger.info("Copying Files\n")
             ignore = self.config["MANAGER"]["ignore"].split("\n")
-            pcsx_dir = self.base_dir
+            pcsx_dir = self.c_data['base_dir']
             game_preset = self.game_preset
             if os.path.isdir(pcsx_dir):
                 if not os.path.isdir(os.path.abspath(game_preset)):
                     self.logger.debug("Game folder does not exist creating at " + game_preset)
                     os.mkdir(game_preset)
                 self.recurse_copy(pcsx_dir, game_preset, ignore, w_over)
+                if self.config["MANAGER"]["symlink"] == "y":
+                    if self.config["MANAGER"]["replace_mem"] == "y":
+                        self.logger.info("It seems that you have replace_mem=y,\n \
+                        creating a symlink is useless\n \
+                        since your pcsx2ui.ini will already contain the path to the shared cards folder\n")
+                    self.symlink_memcards()
                 return True
             else:
                 self.logger.error("PCSX_BASE_DIR not set")
