@@ -6,11 +6,15 @@ BASE_DIR=R:\Emulators\PCSX\PCSX-DEV
 USER_GAMES=
 SHARED_DIR=
 USER_CONFIGS=
-SHARE_MEMCARDS=yes
+SHARE_MEMCARDS=y
 SHARED_MEMCARDS_FOLDER=
 CURRENT_BIOS_NAME=something.bin
 
 [MANAGER]
 continue=y
+overwrite=y
+replace_mem=y
+symlink=n
+symlink_overwrite=n
 ignore=bios
        memcards

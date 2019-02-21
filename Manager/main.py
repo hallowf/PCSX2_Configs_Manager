@@ -8,7 +8,7 @@ def run_main(args, config, logger):
     c_game = args.game if args.game else config["PLAY"]["game"]
     g_manager = GameManager(c_game, args, config, logger)
     env_dict = envs_to_dict(config, logger)
-    g_manager.set_envs(env_dict)
+    g_manager.set_self_values(env_dict)
     if args.option == "p":
         logger.info("Running game %s\n" % (c_game))
         time.sleep(1)

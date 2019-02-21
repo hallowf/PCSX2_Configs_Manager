@@ -16,7 +16,7 @@ def get_manage_option(again=False):
 
 ## Return environment variables dict
 def envs_to_dict(config, logger):
-    env_dict = {x.upper():config["CONFIG"][x] for x in config["CONFIG"]}
+    env_dict = {x.lower():config["CONFIG"][x] for x in config["CONFIG"]}
     for var in env_dict:
         if env_dict[var] == "\"\"" or env_dict[var] == "" or env_dict[var] == " ":
             logger.warning("Variable empty %s" % (var))
