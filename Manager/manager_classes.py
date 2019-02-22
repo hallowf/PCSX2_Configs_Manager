@@ -4,9 +4,9 @@ from manager_utils import get_manage_option
 
 class GameManager(object):
     """
-    On initialization provide game name, option, configparser and logging
-    option can be auto_config manage or play
-    if option is auto_config make sure the commands are run in order cf-at-rf-cc
+    On initialization provide game name, args, configparser and logging
+    option can be ac m or p (auto configure, manage, play)
+    if option is ac (auto configuration) make sure the commands are run in order cf-at
     """
     def __init__(self, name, args, config, logger):
         super(GameManager, self).__init__()
@@ -58,26 +58,36 @@ class GameManager(object):
 
     # Check if game has everything required to run
     def check_has_required(self):
+        self.logger.info("Checking requirements before starting game\n")
         has_failed = False
-        # Verify inside game preset
         game_preset = os.path.normpath(self.game_preset)
+        g_iso = "%s\\%s.iso" % (self.c_data['user_games'], self.game_name)
+        if not os.path.isfile(g_iso):
+            self.logger.error("Couldn't find game iso at: %s" % (g_iso))
+            has_failed = True
+        if not os.path.isdir(game_preset):
+            self.logger.error("Couldn't find game preset folder at: %s" % (game_preset))
+            has_failed = True
+        # Verify inside game preset
         required_dirs = ["inis", "shaders"]
         required_files = ["GameIndex.dbf", "pcsx2.exe"]
-        game_f = [f for f in os.listdir(game_preset) if os.path.isfile("%s\\%s" % (game_preset,f))]
-        game_d = [r_d for r_d in os.listdir(game_preset) if os.path.isdir("%s\\%s" % (game_preset,r_d))]
-        for f in required_files:
-            if f not in game_f:
-                self.logger.error("Missing file %s\\%s" %(game_preset,f))
-                has_failed = True
-        for r_d in required_dirs:
-            if r_d not in required_dirs:
-                self.logger.error("Missing directory %s,%s" %(game_preset,r_d))
-                has_failed = True
+        if not has_failed:
+            game_f = [f for f in os.listdir(game_preset) if os.path.isfile("%s\\%s" % (game_preset,f))]
+            game_d = [r_d for r_d in os.listdir(game_preset) if os.path.isdir("%s\\%s" % (game_preset,r_d))]
+            for f in required_files:
+                if f not in game_f:
+                    self.logger.error("Missing file %s\\%s" %(game_preset,f))
+                    has_failed = True
+            for r_d in required_dirs:
+                if r_d not in required_dirs:
+                    self.logger.error("Missing directory %s,%s" %(game_preset,r_d))
+                    has_failed = True
         return True if not has_failed else False
 
     # For copying files from PCSX_BASE_DIR to Game preset folder
     def recurse_copy(self, src, dest, ignore, w_over=False):
         ignored = False
+        # # TODO: This might catch all subfolders but does not catch the main root
         curr_src_dir = src if os.path.isdir(src) else self.curr_src_dir
         if curr_src_dir:
             self.curr_src_dir = curr_src_dir
@@ -89,8 +99,8 @@ class GameManager(object):
             if os.path.isdir(src):
                 if not os.path.isdir(dest):
                     os.mkdir(dest)
-                files = os.listdir(src)
-                [self.recurse_copy(os.path.join(src, f),os.path.join(dest, f), ignore, w_over) for f in files]
+                l_dir = os.listdir(src)
+                [self.recurse_copy(os.path.join(src, i),os.path.join(dest, i), ignore, w_over) for i in l_dir]
             else:
                 if w_over:
                     self.logger.debug("Overwriting " + src)
@@ -171,7 +181,7 @@ class GameManager(object):
         s_cards = self.c_data["shared_memcards_folder"]
         cmd = "cmd /C mklink /J \"%s\" \"%s\"" % (g_cards, s_cards)
         if os.path.isdir(g_cards):
-            delete = "y" if self.config["MANAGER"]["symlink_overwrite"] == "y" else input("Do you want to delete memcards folder if it exists(y|n):")
+            delete = "y" if self.config["MANAGER"]["symlink_overwrite"] == "y" else input("\nDo you want to delete memcards folder if it exists(y|n):")
             if delete == "y":
                 self.logger.info("WARNING: Deleting the memcards folder at: %s\n" % (g_cards))
                 shutil.rmtree(g_cards)
@@ -190,7 +200,7 @@ class GameManager(object):
         # Loop for user input
         def ask_user(has_ran, cont):
             if was_success == True or was_success == False:
-                cont = cont if cont else input("Continue(y|n):")
+                cont = cont if cont else input("\nContinue(y|n):")
                 if cont == "y":
                     is_repeating = True
                     self.handle_management(is_repeating)
@@ -198,7 +208,7 @@ class GameManager(object):
                     sys.exit(0)
                 else:
                     self.logger.info("Wrong value %s\n" % (cont))
-                    retr = input("Retry(y|n):")
+                    retr = input("\nRetry(y|n):")
                     if retr == "y":
                         ask_user(was_success, cont)
                     else:
@@ -263,6 +273,7 @@ class GameManager(object):
         funcs = {
             "cf" : copy_f,
             "at" : self.copy_templates,
+            "sm" : self.symlink_memcards,
             "pg" : self.run_game_cmd,
             "e" : exit_n,
         }

@@ -3,14 +3,13 @@ import sys
 ## Get user input for action to manage game
 def get_manage_option(again=False):
     if not again:
-        sys.stdout.write("\nSelect the actions by order if creating a new game\n")
-    sys.stdout.write("\n")
+        sys.stdout.write("\nSelect the actions by order if creating a new game\n \n")
     sys.stdout.write("cf : Copy files from pcsx folder to game dir\n")
     sys.stdout.write("at : Add templates to game dir, rename them, and replace values\n")
+    sys.stdout.write("sm : Creates a symbolic link to shared memcards\n")
     sys.stdout.write("pg : Play game\n")
     sys.stdout.write("e : exit\n")
-    sys.stdout.write("\n")
-    action = input("Please select an option(cf|at|pg|e):")
+    action = input("\nPlease select an option(cf|at|sm|pg|e):")
     sys.stdout.write("\n")
     return action
 
