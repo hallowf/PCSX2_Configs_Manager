@@ -1,7 +1,0 @@
-Windows Registry Editor Version 5.00
-
-[HKEY_CURRENT_USER\Software\PCSX2]
-"CustomDocumentsFolder"="*BASE_DIR1*"
-"SettingsFolder"="*BASE_DIR1*\\inis"
-"Install_Dir"="*BASE_DIR1*"
-"ThemesFolder"="*BASE_DIR1*\\themes"

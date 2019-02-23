@@ -12,7 +12,6 @@ PyInstaller.__main__.run([
         '--onefile',
         '--name=Manager',
         '--icon=manager.ico',
-        '--add-data=%s\\data\\pcsx2reg.txt;data' % (CWD),
         '--add-data=%s\\data\\pcsx2ui.txt;data' % (CWD),
         "Manager\\main.py",
     ])

@@ -125,17 +125,9 @@ class GameManager(object):
     def copy_templates(self):
         self.logger.info("Copying templates over to game folder\n")
         try:
-            # pcsx2.reg script
-            f_loc = "%s\\pcsx2.reg" % (self.game_preset)
-            t_loc = "%s\\pcsx2reg.txt" % (self.data_dir)
-            self.logger.info("Creating pcsx2.reg at: %s\n" % (f_loc))
-            content = self.read_write_file(t_loc,"r")
-            self.logger.debug("Replacing *BASE_DIR1* with %s" % (self.base_dir2))
-            content = content.replace("*BASE_DIR1*", self.base_dir2)
-            self.read_write_file(f_loc, "w", content)
             # PCSX2_ui.ini
-            f_loc = f_loc.replace("pcsx2.reg", "inis\\PCSX2_ui.ini")
-            t_loc = t_loc.replace("pcsx2reg.txt", "pcsx2ui.txt")
+            f_loc = "%s\\inis\\pcsx2ui.txt" % (self.game_preset)
+            t_loc = "%s\\pcsx2ui.txt" % (self.data_dir)
             self.logger.info("Creating PCSX2_ui.ini at: %s\n" % (f_loc))
             content = self.read_write_file(t_loc, "r")
             self.logger.debug("Replacing *BASE_DIR1* with %s" % (self.base_dir2))
@@ -244,10 +236,10 @@ class GameManager(object):
         # Manage functions
         # Calls self.recurse_copy
         def copy_f():
+            self.logger.info("Copying Files\n")
             u_conf = self.config["MANAGER"]["overwrite"]
             over_w = u_conf if u_conf == "y" else input("\nDo you want to overwrite files if they exist(y|n):")
             w_over = True if over_w == "y" else False
-            self.logger.info("Copying Files\n")
             ignore = self.config["MANAGER"]["ignore"].split("\n")
             pcsx_dir = self.c_data['base_dir']
             game_preset = self.game_preset
@@ -262,6 +254,11 @@ class GameManager(object):
                         creating a symlink is useless\n \
                         since your pcsx2ui.ini will already contain the path to the shared cards folder\n")
                     self.symlink_memcards()
+                if self.config["MANAGER"]["custom_inis"] == "y":
+                    g_inis = "%s\\%s" % (self.config["MANAGER"]["custom_inis_folder"], self.game_name)
+                    self.logger.info("Copying custom inis from %s\n" % (g_inis))
+                    w_over = True
+                    self.recurse_copy(g_inis, game_preset, ignore, w_over)
                 return True
             else:
                 self.logger.error("PCSX_BASE_DIR not set")
