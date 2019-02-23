@@ -27,9 +27,9 @@ def add_args(parser):
     required_g = parser.add_argument_group("Required args")
     # required
     required_g.add_argument("-cfg", help="Configuration file", action="store", required=True)
-    required_g.add_argument("-option", help="(ac|m|p) a for auto create game, m for manage, p for play", action="store", required=True)
+    required_g.add_argument("-option", help="(ac|mac|m|p) ac for auto create game, mac for multiple auto creation, m for manage, p for play", action="store", required=True)
     # optional
     parser.add_argument("-debug", "--debug_level", help="Set debug level", action="store")
-    parser.add_argument("--game", help="Game name for running the scripts or creating a new one, can be set in manager.ini", action="store")
+    parser.add_argument("--game", help="Game name, can be set in manager.ini", action="store")
     args = parser.parse_args()
     return args

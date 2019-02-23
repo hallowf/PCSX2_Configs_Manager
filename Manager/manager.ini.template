@@ -2,19 +2,22 @@
 game=Jak1
 
 [CONFIG]
-BASE_DIR=R:\Emulators\PCSX\PCSX-DEV
-USER_GAMES=
-SHARED_DIR=
-USER_CONFIGS=
+BASE_DIR=C:\
+USER_GAMES=C:\
+SHARED_DIR=C:\
+USER_CONFIGS=C:\
 SHARE_MEMCARDS=y
-SHARED_MEMCARDS_FOLDER=
+SHARED_MEMCARDS_FOLDER=C:\
 CURRENT_BIOS_NAME=something.bin
 
 [MANAGER]
+interface=n
 continue=y
 overwrite=y
 replace_mem=y
 symlink=n
 symlink_overwrite=n
+custom_inis=n
+custom_inis_folder=C:\
 ignore=bios
        memcards

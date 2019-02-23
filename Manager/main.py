@@ -6,26 +6,44 @@ from manager_classes import GameManager
 ## main function
 def run_main(args, config, logger):
     c_game = args.game if args.game else config["PLAY"]["game"]
-    g_manager = GameManager(c_game, args, config, logger)
+    if "\n" in c_game:
+        c_game = c_game.split("\n")
+    elif " " in  c_game:
+        c_game = c_game.split(" ")
     env_dict = envs_to_dict(config, logger)
-    g_manager.set_self_values(env_dict)
-    if args.option == "p":
-        logger.info("Running game %s\n" % (c_game))
-        time.sleep(1)
-        has_ran = g_manager.run_game_cmd()
-        if has_ran:
-            sys.exit(0)
+    if args.option == "mac":
+        for game in c_game:
+            g_manager = GameManager(game, args, config, logger)
+            g_manager.set_self_values(env_dict)
+            logger.info("Auto configuring %s\n" % (game))
+            time.sleep(1)
+            g_manager.manage_game("cf")
+            g_manager.manage_game("at")
+        logger.info("Finished configuring all games")
+    else:
+        if not isinstance(c_game, list):
+            g_manager = GameManager(c_game, args, config, logger)
+            g_manager.set_self_values(env_dict)
+            if args.option == "p":
+                logger.info("Running game %s\n" % (c_game))
+                time.sleep(1)
+                has_ran = g_manager.run_game_cmd()
+                if has_ran:
+                    sys.exit(0)
+                else:
+                    sys.exit(1)
+            elif args.option == "ac":
+                logger.info("Auto configuring %s\n" % (c_game))
+                time.sleep(1)
+                g_manager.manage_game("cf")
+                g_manager.manage_game("at")
+            elif args.option == "m":
+                logger.info("Starting management\n")
+                time.sleep(1)
+                g_manager.handle_management()
         else:
-            sys.exit(1)
-    elif args.option == "ac":
-        logger.info("Auto configuring %s\n" % (c_game))
-        time.sleep(2)
-        g_manager.manage_game("cf")
-        g_manager.manage_game("at")
-    elif args.option == "m":
-        logger.info("Starting management\n")
-        time.sleep(1)
-        g_manager.handle_management()
+            logger.error("It seems you have provided multiple game names, please use -option mac to configure them\n")
+            logger.info("Games provided are %s" % (c_game))
 
 ## Configure and run
 def start_main():
