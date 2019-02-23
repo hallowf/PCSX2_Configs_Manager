@@ -5,34 +5,60 @@ This is just a simple cli tool I wrote in python that allows you to easily confi
 
 ```
 [PLAY]
-game=Jak1 <= game name must match the iso's name EX: Jak.iso  = Jak
+game=Jak1 <= game name must match the iso's name EX: Jak.iso  = Jak, can also be multiple values see ignore at the end
 
 [CONFIG]
 BASE_DIR=R:\Emulators\PCSX\PCSX-DEV <= location of your pcsx installation
+
 USER_GAMES=R:\Emulators\PCSX\Games <= location of folder with isos
+
 SHARED_DIR=R:\Emulators\PCSX\Shared <= location of shared dir (Contains your bios and plugins you can just copy them over)
+
 USER_CONFIGS=R:\Emulators\PCSX\Configs <= Location of game presets (Place to save game configurations)
+
 SHARE_MEMCARDS=y <= if you want to share memcards
+
 SHARED_MEMCARDS_FOLDER=C:\users\user\Documents\pcsx2\memcards <= location of memcards folder
+
 CURRENT_BIOS_NAME=something.bin <= bios name *for replacing value in ui.ini
 
 [MANAGER]
 interface=n <= Enables/Disables pcsx2 GUI
+
 continue=y <= For managing game if y it will autocontinue if no will always stop after first cmd ran
+
 overwrite=y <= If y, when copying files overwrite them else copy missing ones
+
 replace_mem=y <= It will replace MemoryCards=*MEMCARDS* with your shared memcards folder if n it will replace *MEMCARDS* with memcards (Default location)
+
 symlink=n <= Instead of replacing memorycards path this creates a symbolic link with your shared folder *(It's a shortcut basically)*
+
 symlink_overwrite=n <= If set to y it will delete memcards (located at the new game config path) before trying to create a symlink
+
+custom_inis=y <= Only for multiple game configuration, Use independent inis for each game
+
+custom_inis_folder=R:\Emulators\PCSX\Custom_Inis <= Folder containing custom inis (*Inside it put a folder with the game's name and the inis folder inside*)
+
 ignore=bios <= folders to ignore
        memcards <= indentation is important just press "tab" or "space" until they line up
 ```
 
+## Features
+
+1. Easy automatic configuration for games
+2. Multiple game automatic configuration
+ * Supports custom inis per game
+3. Individual game management
+  * If you prefer to manually configure each game
+4. Completely independent
+ * Before this used to depend on scripts now it's just a single executable and a configuration file
+
+
 ## Usage
 
-First donwload the [exe](https://github.com/hallowf/PCSX2_Configs_Manager/releases) place it near your pcsx desired configs location
-and make a file named manager.ini you can name it whatever you want copy the contents from [Configuration](#configuration)
-replacing everything with your own values:
+First donwload the [exe](https://github.com/hallowf/PCSX2_Configs_Manager/releases) place it near your pcsx desired configs location and make a file named manager.ini you can name it whatever you want copy the contents from [Configuration](#configuration) replacing everything with your own values:
 
+### Basic usage
 
 To configure a game
 1. Run pcsx2 from it's installed location
@@ -40,7 +66,22 @@ To configure a game
 3. Replace game name in manager.ini or specify it as an argument
 4. Run `Manager.exe -cfg manager.ini -option ac`
 5. Play `Manager.exe -cfg manager.ini -option p`
-6. run `Manager.exe --help` to see arguments
+6. Run `Manager.exe --help` to see arguments
+
+### Multiple automatic configuration
+
+To configure multiple game
+1. Run pcsx2 from it's installed location
+2. Configure plugins and settings accordingly
+3. Create a folder with the game name in custom_inis_folder
+4. Copy the inis folder from pcsx2 location to the folder you just created
+5. Repeat steps above for desired games
+6. Replace game name in manager.ini put all games you just configured
+ * If you pass them as arguments put them inside quotes and with spaces in between EX: --game "Jak1 Jak2 Jak3"
+7. Run `Manager.exe -cfg manager.ini -option mac`
+8. Before playing remove all names in manager.ini except the one you want to play
+9. Play `Manager.exe -cfg manager.ini -option p`
+
 
 ## DISCLAIMER:
 
@@ -79,12 +120,7 @@ and then all configure the virtual environment
 
 ## iDEAS NOT YET IMPLEMENTED
 
-1. Multiple game automatic configuration
-* for this I will need a "custom" inis folder, and a setting for selecting custom inis or not,
-in case there is a need to create equal configurations for multiple games
-
-
-2. Backup memorycards
+1. Backup memorycards
 * This might require a lot of code if using connections to cloud providers
 * I might just make an archive out of them
 * [dropbox](https://github.com/dropbox/dropbox-sdk-python) is nice and easy
