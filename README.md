@@ -132,3 +132,9 @@ for how many copys to keep in the cloud before starting to delete old ones,
 however going to the trouble of renaming files already stored makes no sense,
 so maybe attach to the zip name a simple timestamp that I could read with python's
 datetime module
+
+2. Resume savestate??
+  * Passing --state number as an argument or as a config option
+  * PCSX2 doesn't seem to have an argument to resume savestate
+  * OpenCV would be able to do it but seems too much for such a small project
+  * pywinauto seems more appropriate
