@@ -1,6 +1,6 @@
 import os, sys, configparser, argparse ,subprocess, traceback, shutil, logging, time
 
-from manager_utils import get_manage_option, envs_to_dict, add_args
+from manager_utils import get_manage_option, envs_to_dict, add_args, state_runner
 from manager_classes import GameManager
 
 ## main function
@@ -11,7 +11,12 @@ def run_main(args, config, logger):
     elif " " in  c_game:
         c_game = c_game.split(" ")
     env_dict = envs_to_dict(config, logger)
+    g_manager = GameManager(c_game, args, config, logger)
     if args.option == "mac":
+        if not isinstance(c_game, list):
+            logger.critical("You are trying to configure multiple games but only one name provided: %s" % (c_game))
+            sys.exit(1)
+        # TODO: Put this as an internal function of game manager
         for game in c_game:
             g_manager = GameManager(game, args, config, logger)
             g_manager.set_self_values(env_dict)
@@ -22,14 +27,25 @@ def run_main(args, config, logger):
         logger.info("Finished configuring all games")
     else:
         if not isinstance(c_game, list):
-            g_manager = GameManager(c_game, args, config, logger)
             g_manager.set_self_values(env_dict)
             if args.option == "p":
                 logger.info("Running game %s\n" % (c_game))
-                time.sleep(1)
                 has_ran = g_manager.run_game_cmd()
                 if has_ran:
-                    sys.exit(0)
+                    if args.resume:
+                        logger.info("Resuming states from scratch might cause unexpected issues please be carefull\n")
+                        time.sleep(1)
+                        state = args.resume
+                        wait_t = None
+                        if args.load_time:
+                            wait_t = load_time
+                        else:
+                            logger.info("Load time not set default is 15\n")
+                            wait_t = 15
+                        logger.info("Trying to resume state %s\n" % (state))
+                        state_runner(logger, state, wait_t)
+                    else:
+                        sys.exit(0)
                 else:
                     sys.exit(1)
             elif args.option == "ac":
@@ -50,17 +66,17 @@ def start_main():
     sys.stdout.write("\n")
     arg_parser = argparse.ArgumentParser(description='Manage PCSX2 configs')
     args = add_args(arg_parser)
-    di_level = "info" if not args.debug_level else args.debug_level
+    di_level = "info" if not args.debug else args.debug
     d_level = None
     try:
         d_level = getattr(logging, di_level.upper())
     except Exception as e:
-        sys.stdout.write("Invalid log level " + args.debug_level + "\n")
+        sys.stdout.write("Invalid log level " + args.debug + "\n")
         sys.exit(1)
     if not isinstance(d_level, int):
         sys.stdout.write("Invalid log level " + di_level + "\n")
         sys.exit(1)
-    logging.basicConfig(format="%(name)s: %(message)s",level=d_level)
+    logging.basicConfig(format="%(name)s - %(levelname)s : %(message)s",level=d_level)
     logger = logging.getLogger("PCSX2 Config Manager")
     config = configparser.ConfigParser()
     config.read(args.cfg)

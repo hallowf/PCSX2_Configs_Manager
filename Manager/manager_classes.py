@@ -1,4 +1,4 @@
-import os, shutil, sys, subprocess, winreg, ctypes
+import os, shutil, sys, subprocess, winreg, time
 
 from manager_utils import get_manage_option
 
@@ -22,7 +22,8 @@ class GameManager(object):
         self.curr_src_dir = None
         self.base_dir2 = None
         self.main_exe = None
-        self.kdll = ctypes.windll.LoadLibrary("kernel32.dll")
+        self.r_proc = None
+        self.loaded_state = None
 
     def __setitem__(self,k,v):
         self.c_data[k] = v
@@ -33,20 +34,21 @@ class GameManager(object):
     # Set environment variables
     def set_self_values(self,env_dict):
         self.logger.info("Setting variables\n")
-        env_dict["shared_dir"] = env_dict["shared_dir"].replace("\\", "\\\\")
-        env_dict["shared_memcards_folder"] = env_dict["shared_memcards_folder"].replace("\\","\\\\")
-        for v in env_dict:
-            if " " in env_dict[v]:
-                env_dict[v] = "\"%s\"" % (env_dict[v])
-            if v == "shared_memcards_folder" and env_dict["share_memcards"] == "n":
+        for n in env_dict:
+            v = env_dict[n]
+            if " " in env_dict[n]:
+                env_dict[n] = "\"%s\"" % (env_dict[n])
+            if n == "shared_memcards_folder" and env_dict["share_memcards"] == "n":
                 self.logger.info("Memory cards not shared skipping variable\n")
                 pass
             else:
-                if v == "base_dir":
-                    self.base_dir2 = env_dict[v].replace("\\","\\\\")
-                    self.main_exe = v + "\\pcsx2.exe"
-                self.logger.debug("Setting %s to %s" % (v,env_dict[v]))
-                self.__setitem__(v,env_dict[v])
+                if n == "base_dir":
+                    self.base_dir2 = env_dict[n].replace("\\","\\\\")
+                    self.main_exe = env_dict[n] + "\\pcsx2.exe"
+                elif n == "shared_dir" or n == "shared_memcards_folder":
+                    v = env_dict[n].replace("\\","\\\\")
+                self.logger.debug("Setting %s to %s" % (n,v))
+                self.__setitem__(n,v)
         self.set_game_preset()
 
     # Sets self.game_preset to game preset folder
@@ -126,12 +128,14 @@ class GameManager(object):
         self.logger.info("Copying templates over to game folder\n")
         try:
             # PCSX2_ui.ini
-            f_loc = "%s\\inis\\pcsx2ui.txt" % (self.game_preset)
+            f_loc = "%s\\inis\\PCSX2_ui.ini" % (self.game_preset)
             t_loc = "%s\\pcsx2ui.txt" % (self.data_dir)
             self.logger.info("Creating PCSX2_ui.ini at: %s\n" % (f_loc))
             content = self.read_write_file(t_loc, "r")
             self.logger.debug("Replacing *BASE_DIR1* with %s" % (self.base_dir2))
             content = content.replace("*BASE_DIR1*", self.base_dir2)
+            self.logger.debug("Adding game iso to CurrentIso")
+            content = content.replace("*CURRENT_ISO*", "%s\\\\%s.iso" % (self.c_data["user_games"].replace("\\","\\\\"), self.game_name))
             self.logger.debug("Replacing *BIOS* with %s" % (self.c_data['current_bios_name']))
             content = content.replace("*BIOS*", self.c_data['current_bios_name'])
             self.logger.debug("Replacing SHARED_DIR with %s" % (self.c_data['shared_dir']))
@@ -219,13 +223,19 @@ class GameManager(object):
             use_gui = "--nogui"
         if has_passed:
             self.manage_reg()
-            r_game = "%s\\pcsx2.exe %s\\%s.iso %s" % (self.game_preset, self.c_data['user_games'], self.game_name, use_gui)
+            r_cmd = None
+            if self.u_args.resume:
+                r_cmd = "%s\\pcsx2.exe" % (self.game_preset)
+            else:
+                r_cmd = "%s\\pcsx2.exe %s\\%s.iso %s" % (self.game_preset, self.c_data['user_games'], self.game_name, use_gui)
             try:
-                self.logger.info("Running cmd \"%s\"\n" % (r_game))
-                subprocess.call(r_game)
-                sys.exit(0)
+                self.logger.info("Running cmd \"%s\"\n" % (r_cmd))
+                self.r_proc = subprocess.Popen(r_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                time.sleep(2)
+                self.logger.debug("Launch successfull")
+                return True
             except Exception as e:
-                self.logger.error("Cmd has failed %s" % (r_game))
+                self.logger.error("Cmd has failed %s" % (r_cmd))
                 self.logger.debug(str(e))
         else:
             return False
