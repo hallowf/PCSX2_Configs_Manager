@@ -35,28 +35,14 @@ def run_main(args, config, logger):
                     if args.resume:
                         logger.info("Resuming states from scratch might cause unexpected issues please be carefull\n")
                         time.sleep(1)
-                        state = None
+                        state = args.resume
                         wait_t = None
-                        try:
-                            state = int(args.resume)
-                            if state > 9:
-                                raise ValueError
-                        except ValueError as e:
-                            logger.critical("State must be a number from 0 to 9 killing process...\n")
-                            g_manager.r_proc.terminate()
-                            sys.exit(1)
                         if args.load_time:
-                            try:
-                                wait_t = int(args.load_time)
-                                if wait_t < 4:
-                                    raise ValueError
-                            except Exception as e:
-                                logger.critical("Wait time must be greater than 4 killing process...\n")
-                                g_manager.r_proc.terminate()
-                                sys.exit(1)
-                            logger.info("Trying to resume state %s" % (state))
+                            wait_t = load_time
                         else:
+                            logger.info("Load time not set default is 15\n")
                             wait_t = 15
+                        logger.info("Trying to resume state %s\n" % (state))
                         state_runner(logger, state, wait_t)
                     else:
                         sys.exit(0)
@@ -90,7 +76,7 @@ def start_main():
     if not isinstance(d_level, int):
         sys.stdout.write("Invalid log level " + di_level + "\n")
         sys.exit(1)
-    logging.basicConfig(format="%(name)s: %(message)s",level=d_level)
+    logging.basicConfig(format="%(name)s - %(levelname)s : %(message)s",level=d_level)
     logger = logging.getLogger("PCSX2 Config Manager")
     config = configparser.ConfigParser()
     config.read(args.cfg)
