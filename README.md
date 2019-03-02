@@ -52,7 +52,7 @@ ignore=bios <= folders to ignore
   * If you prefer to manually configure each game
 4. Completely independent
  * Before this used to depend on scripts now it's just a single executable and a configuration file
-
+5. Resume states read [this](#resuming-state)
 
 ## Usage
 
@@ -78,10 +78,47 @@ To configure multiple game
 5. Repeat steps above for desired games
 6. Replace game name in manager.ini put all games you just configured
  * If you pass them as arguments put them inside quotes and with spaces in between EX: --game "Jak1 Jak2 Jak3"
-7. Run `Manager.exe -cfg manager.ini -option mac`
+7. Run `Manager.exe manager.ini mac`
 8. Before playing remove all names in manager.ini except the one you want to play
-9. Play `Manager.exe -cfg manager.ini -option p`
+9. Play `Manager.exe manager.ini p`
 
+
+### Resuming state
+
+This might lead to unexpected issues please use it carefully
+1. `Manager.exe manager.ini p --resume 0`
+
+
+**From the pcsx2 wiki:**
+
+You should be safe if you normally boot games from the disc and load a memcard save, then proceed playing and using savestates from there, and quit the game after making a final memcard save. Relying on savestates to continue where you left off directly instead of loading from a memcard can lead to inconsistencies. Most of the time you should be okay but occasionally you can run into situations where the savestate insists you do not have a valid memcard save.
+In case this happens, simply reboot the game and load from the memcard save normally, instead of directly loading from the savestate. Later savestates should remember that you started from a memcard save and will not repeat the problem.
+
+### CLI
+
+```
+Manager.exe manager.ini p
+|               |       |
+Program       Config   Option
+```
+
+1. Option
+ * p - Play
+ * ac - Auto configuration
+ * mac - Multiple auto configuration
+ * m - Manage
+2. Config - Configuration file
+3. `--debug`
+ * info - Default only shows info on execution
+ * debug - Log everything
+4. `--game`
+ * Game or games to use (only specify multiple games for multiple auto configuration)
+5. `--resume`
+  * From 0 to 9 save state to resume
+  * Use it only with option p
+6. `--load_time`
+  * Time to wait for game to run before trying to resume state
+  * Default is 15
 
 ## DISCLAIMER:
 
@@ -132,9 +169,3 @@ for how many copys to keep in the cloud before starting to delete old ones,
 however going to the trouble of renaming files already stored makes no sense,
 so maybe attach to the zip name a simple timestamp that I could read with python's
 datetime module
-
-2. Resume savestate??
-  * Passing --state number as an argument or as a config option
-  * PCSX2 doesn't seem to have an argument to resume savestate
-  * OpenCV would be able to do it but seems too much for such a small project
-  * pywinauto seems more appropriate
