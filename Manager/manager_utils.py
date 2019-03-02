@@ -37,12 +37,30 @@ def add_args(parser):
     games = None
     if args.game:
         games = args.game.split(" ") if " " in args.game else args.game
+    # Check usage
     if args.resume and args.option != "p":
         sys.stdout.write("Found resume argument but invalid option %s\n" % (args.option))
         sys.stdout.write("You can't resume a state while managing or configuring game\n")
         sys.exit(1)
     elif args.option == "mac" and args.game and not isinstance(games, list):
         sys.stdout.write("You tried to configure multiple games but only provided one name: %s\n" % (games))
+    # Check and set values
+    if args.resume:
+        try:
+            state = int(args.resume)
+            if state > 9:
+                raise ValueError
+            args.resume = state
+        except ValueError as e:
+            sys.stdout.write("--resume must be a number from 0 to 9, closing...\n")
+            sys.exit(1)
+    if args.load_time:
+        try:
+            wait_t = int(args.load_time)
+            if wait_t < 10 or wait_t > 150:
+                raise ValueError
+        except ValueError as e:
+            sys.stdout.write("--load_time must be a number from 10 to 150, setting to default: 15\n")
     return args
 
 # For Initializing the game and then try to resume state
@@ -77,7 +95,7 @@ def state_runner(logger, slot, wait_t):
     # Open system menu again
     logger.info("Reopening menus to load state\n")
     sys_menu_item.click_input()
-    # Select and open load state menus
+    # Select and click load state menus
     load_state = sys_child.child_window(title_re="Load state\s.*", control_type="MenuItem")
     load_state.click_input()
     # Select state button and click it
