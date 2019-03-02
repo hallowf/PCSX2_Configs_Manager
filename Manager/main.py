@@ -32,7 +32,7 @@ def run_main(args, config, logger):
                 logger.info("Running game %s\n" % (c_game))
                 has_ran = g_manager.run_game_cmd()
                 if has_ran:
-                    if args.resume:
+                    if args.resume or args.resume == 0:
                         logger.info("Resuming states from scratch might cause unexpected issues please be carefull\n")
                         time.sleep(1)
                         state = args.resume

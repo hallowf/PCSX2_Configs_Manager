@@ -224,13 +224,14 @@ class GameManager(object):
         if has_passed:
             self.manage_reg()
             r_cmd = None
-            if self.u_args.resume:
+            resume = self.u_args.resume
+            if resume or resume == 0:
                 r_cmd = "%s\\pcsx2.exe" % (self.game_preset)
             else:
                 r_cmd = "%s\\pcsx2.exe %s\\%s.iso %s" % (self.game_preset, self.c_data['user_games'], self.game_name, use_gui)
             try:
                 self.logger.info("Running cmd \"%s\"\n" % (r_cmd))
-                self.r_proc = subprocess.Popen(r_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                self.r_proc = subprocess.Popen(r_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP)
                 time.sleep(2)
                 self.logger.debug("Launch successfull")
                 return True
