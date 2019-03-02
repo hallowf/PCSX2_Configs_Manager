@@ -97,28 +97,29 @@ In case this happens, simply reboot the game and load from the memcard save norm
 ### CLI
 
 ```
-Manager.exe manager.ini p
-|               |       |
-Program       Config   Option
+Manager.exe manager.ini p  --optional ....
+|               |       |       |
+Program       Config  Option  Optional_Args
 ```
 
-1. Option
+Arguments passed with (--) are optional and therefore not required
+
+|   Argument    |        Value          |     Default     |
+| ------------- | --------------------- | --------------- |
+|   Config      | Config file name      |  User provided  |
+|   Option      | p - ac - mac - m      |  User provided  |
+|   --debug     | info or debug         |  info           |
+|   --game      | Game or games to use  |  None - Config  |
+|   --resume    | from 0 to 9 savestate |  None           |
+|   --load_time |     from 10 to 150    |  None           |
+
+
+#### Option
  * p - Play
  * ac - Auto configuration
  * mac - Multiple auto configuration
  * m - Manage
-2. Config - Configuration file
-3. `--debug`
- * info - Default only shows info on execution
- * debug - Log everything
-4. `--game`
- * Game or games to use (only specify multiple games for multiple auto configuration)
-5. `--resume`
-  * From 0 to 9 save state to resume
-  * Use it only with option p
-6. `--load_time`
-  * Time to wait for game to run before trying to resume state
-  * Default is 15
+
 
 ## DISCLAIMER:
 
