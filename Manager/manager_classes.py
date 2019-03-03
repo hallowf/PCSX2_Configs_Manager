@@ -1,6 +1,7 @@
 import os, shutil, sys, subprocess, winreg, time
 
 from manager_utils import get_manage_option
+from pywinauto.application import Application
 
 class GameManager(object):
     """
@@ -240,6 +241,50 @@ class GameManager(object):
                 self.logger.debug(str(e))
         else:
             return False
+
+    # For resuming save state
+    def state_runner(self):
+        slot = self.u_args.resume
+        wait_t = 15 if not self.u_args.load_time else self.u_args.load_time
+        slot_re = "Slot %s - .*" % (slot)
+        t_wait_t = wait_t
+        wait_t //= 2
+        # Define app and connect
+        self.logger.info("Connecting to app\n")
+        app = Application(backend="uia").connect(title_re="PCSX2 .*", found_index=0)
+        # Select main window
+        app_window = app.window(title_re="PCSX2 .*")
+        sys_menu_item = app_window[u"SystemMenuItem"]
+        # Click system menu
+        self.logger.info("Opening system menu\n")
+        sys_menu_item.click_input()
+        sys_child = app_window.child_window(title_re="System", control_type="Menu", found_index=0)
+        # Select boot button trough new child window after selecting menu
+        self.logger.info("Booting game to load stuff\n")
+        boot = sys_child.child_window(title="Boot ISO (fast)", control_type="MenuItem")
+        boot.click_input()
+        # Wait a bit for the window to load
+        self.logger.info("Waiting %s seconds for game to load\n" % (t_wait_t))
+        time.sleep(wait_t)
+        # Select game window
+        game_window = app.window(title_re="Slot: .*")
+        # Wait a bit for game to load and close window
+        time.sleep(wait_t)
+        self.logger.info("Closing game window\n")
+        game_window.close()
+        # Open system menu again
+        self.logger.info("Reopening menus to load state\n")
+        sys_menu_item.click_input()
+        # Select and click load state menus
+        load_state = sys_child.child_window(title_re="Load state\s.*", control_type="MenuItem")
+        load_state.click_input()
+        # Select state button and click it
+        load_state_child = app_window.child_window(title_re="Load state\s.*", control_type="Menu", found_index=0)
+        l_state_btn = load_state_child.child_window(title_re=slot_re, control_type="MenuItem")
+        self.logger.info("Loading state\n")
+        l_state_btn.click_input()
+        self.logger.info("Done, exiting cli\n")
+        sys.exit(0)
 
     # Manage game
     def manage_game(self, action):

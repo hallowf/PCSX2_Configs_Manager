@@ -26,5 +26,4 @@ t_dest = "%s\\dist\\" % (CWD)
 for f in to_add:
     f_src = "%s\\%s" % (CWD, to_add[f])
     f_dest = t_dest + f
-    print(f_src, f_dest)
     shutil.copyfile(f_src, f_dest)

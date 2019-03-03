@@ -1,6 +1,6 @@
 import os, sys, configparser, argparse ,subprocess, traceback, shutil, logging, time
 
-from manager_utils import get_manage_option, envs_to_dict, add_args, state_runner
+from manager_utils import get_manage_option, envs_to_dict, add_args
 from manager_classes import GameManager
 
 ## main function
@@ -35,15 +35,7 @@ def run_main(args, config, logger):
                     if args.resume or args.resume == 0:
                         logger.info("Resuming states from scratch might cause unexpected issues please be carefull\n")
                         time.sleep(1)
-                        state = args.resume
-                        wait_t = None
-                        if args.load_time:
-                            wait_t = load_time
-                        else:
-                            logger.info("Load time not set default is 15\n")
-                            wait_t = 15
-                        logger.info("Trying to resume state %s\n" % (state))
-                        state_runner(logger, state, wait_t)
+                        g_manager.state_runner()
                     else:
                         sys.exit(0)
                 else:
