@@ -35,6 +35,7 @@ def add_args(parser):
     parser.add_argument("--load_time", help="Time in seconds to wait while loading game when resuming state", action="store")
     args = parser.parse_args()
     games = None
+    options = ["ac","mac","m","p"]
     if args.game:
         games = args.game.split(" ") if " " in args.game else args.game
     # Check usage
@@ -61,4 +62,15 @@ def add_args(parser):
                 raise ValueError
         except ValueError as e:
             sys.stdout.write("--load_time must be a number from 10 to 150, setting to default: 15\n")
+    if not args.cfg.endswith(".ini"):
+        sys.stdout.write("The file you provided has an invalid name: %s\n" % (args.cfg))
+        sys.stdout.write("Please name it like this: something.ini\n")
+        sys.exit(1)
+    found_opt = False
+    for opt in options:
+        if args.option == opt:
+            found_opt = True
+    if not found_opt:
+        sys.stdout.write("Invalid option: %s\n" % (args.option))
+        sys.exit(1)
     return args

@@ -54,10 +54,12 @@ class GameManager(object):
 
     # Sets self.game_preset to game preset folder
     def set_game_preset(self):
-        game_preset = self.game_preset
-        if not game_preset:
+        if not isinstance(self.game_name, list):
+            self.logger.debug("Setting game preset to %s" % (self.game_name))
             game_preset = self.c_data['user_configs'] + "\\Games\\" + self.game_name
             self.game_preset = game_preset
+        else:
+            self.logger.debug("Multiple games detected skipping set_game_preset")
 
     # Check if game has everything required to run
     def check_has_required(self):
@@ -74,9 +76,10 @@ class GameManager(object):
         # Verify inside game preset
         required_dirs = ["inis", "shaders"]
         required_files = ["GameIndex.dbf", "pcsx2.exe"]
+        l_dir = os.listdir(game_preset)
         if not has_failed:
-            game_f = [f for f in os.listdir(game_preset) if os.path.isfile("%s\\%s" % (game_preset,f))]
-            game_d = [r_d for r_d in os.listdir(game_preset) if os.path.isdir("%s\\%s" % (game_preset,r_d))]
+            game_f = [f for f in l_dir if os.path.isfile("%s\\%s" % (game_preset,f))]
+            game_d = [r_d for r_d in l_dir if os.path.isdir("%s\\%s" % (game_preset,r_d))]
             for f in required_files:
                 if f not in game_f:
                     self.logger.error("Missing file %s\\%s" %(game_preset,f))
@@ -171,6 +174,7 @@ class GameManager(object):
             except Exception as e:
                 self.logger.error("Failed to set registry values")
                 self.logger.debug(str(e))
+                sys.exit(1)
 
     def symlink_memcards(self, delete="n"):
         self.logger.info("Creating symlink for memcards\n")
@@ -197,6 +201,8 @@ class GameManager(object):
         # Loop for user input
         def ask_user(has_ran, cont):
             if was_success == True or was_success == False:
+                if was_success == False:
+                    self.logger.error("Management failed please check the previous lines for errors\n")
                 cont = cont if cont else input("\nContinue(y|n):")
                 if cont == "y":
                     is_repeating = True
@@ -239,6 +245,7 @@ class GameManager(object):
             except Exception as e:
                 self.logger.error("Cmd has failed %s" % (r_cmd))
                 self.logger.debug(str(e))
+                sys.exit(1)
         else:
             return False
 
@@ -285,6 +292,16 @@ class GameManager(object):
         l_state_btn.click_input()
         self.logger.info("Done, exiting cli\n")
         sys.exit(0)
+
+    # For auto configuring
+    def auto_configure(self, game):
+        self.logger.info("Auto configuring %s\n" % (game))
+        self.game_name = game
+        self.set_game_preset()
+        c_ran = self.manage_game("cf")
+        t_ran = self.manage_game("at")
+        if c_ran == False or t_ran == False:
+            self.logger.error("Management failed please check the previous lines for errors\n")
 
     # Manage game
     def manage_game(self, action):
@@ -334,4 +351,5 @@ class GameManager(object):
         try:
             return funcs[action]()
         except KeyError as e:
+            self.logger.debug(e)
             return 0
